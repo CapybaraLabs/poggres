@@ -55,7 +55,7 @@ b2 authorize-account "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
 
 # upload it
 b2 upload-file --sha1 "${SHA1}" \
-	"${INFO}" \
+	${INFO} \
 	--noProgress \
 	"${BUCKET}" \
 	"${DUMPDIR}/${FILENAME}" \
