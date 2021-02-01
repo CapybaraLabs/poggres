@@ -4,12 +4,12 @@ MAINTAINER napster@npstr.space
 ENV POSTGRES_USER postgres
 
 RUN apt-get update && apt-get install -y \
-    python-pip \
+    python3-pip \
     cron \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-RUN pip install --no-cache-dir \
+RUN pip3 install --no-cache-dir \
 	b2 \
 	&& rm -rf ~/.cache/pip/*
 
