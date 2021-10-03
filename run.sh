@@ -25,7 +25,7 @@ cron
 
 # running the official postgres entry script in the background
 echo "Running entry point"
-docker-entrypoint.sh postgres &
+docker-entrypoint.sh postgres "$@" &
 child=$!
 
 # run our own init script
