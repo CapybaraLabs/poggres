@@ -25,11 +25,12 @@ cron
 # running the official postgres entry script in the background
 echo "Running entry point"
 docker-entrypoint.sh postgres &
+child=$!
 
 # run our own init script
 echo "Running init db"
 initdb.sh
 
 # Wait on the "docker-entrypoint.sh postgres &" process that we started in the background
-child=$!
+echo "Waiting for exit"
 wait "$child"
