@@ -2,7 +2,7 @@
 
 # We are using this script, because we need to reliably execute a script on each start of the db container,
 # to migrate the database for containers with an external volume persisting the database data, where the scripts in
-# /docker-entrypoint-initdb.d/ are getting skipped.
+# /docker-entrypoint-initdb.d/ are getting skipped, or add databases & extensions.
 # Relevant issue: https://github.com/docker-library/postgres/issues/191
 
 set -e

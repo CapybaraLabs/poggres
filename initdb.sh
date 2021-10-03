@@ -11,21 +11,25 @@ while ! pg_isready -U "$POSTGRES_USER"; do
 	sleep 1
 done
 
+PSQL="psql -v ON_ERROR_STOP=1 -U $POSTGRES_USER"
+
 # make sure the role exists
-psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -tAc "SELECT 1 FROM pg_roles WHERE rolname='$ROLE';" | grep -q 1 || createuser -U "$POSTGRES_USER" "$ROLE"
-
+$PSQL -tAc "SELECT 1 FROM pg_roles WHERE rolname='$ROLE';" | grep -q 1 || createuser -U "$POSTGRES_USER" "$ROLE"
 # make sure the role has a password
-psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -tAc "ALTER USER $ROLE WITH PASSWORD '$PASSWORD';"
+$PSQL -tAc "ALTER USER $ROLE WITH PASSWORD '$PASSWORD';"
 
-# make sure the database exists
-psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -tc "SELECT 1 FROM pg_database WHERE datname = '$DB';" | grep -q 1 || psql -U "$POSTGRES_USER" -c "CREATE DATABASE $DB WITH OWNER = $ROLE;"
-# make sure the database is owned by the role
-psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -c "ALTER DATABASE $DB OWNER TO $ROLE;"
-psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -c "GRANT ALL PRIVILEGES ON DATABASE $DB TO $ROLE;"
-# make sure extensions are set up
-for extension in $EXTENSIONS; do
-	psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$DB" -c "CREATE EXTENSION IF NOT EXISTS $extension;"
-	psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$DB" -c "ALTER EXTENSION $extension SET SCHEMA pg_catalog;"
+for database in $DB; do
+	# make sure the database exists
+	$PSQL -tc "SELECT 1 FROM pg_database WHERE datname = '$database';" | grep -q 1 || $PSQL -c "CREATE DATABASE $database WITH OWNER = $ROLE;"
+	# make sure the database is owned by the role
+	$PSQL -c "ALTER DATABASE $database OWNER TO $ROLE;"
+	$PSQL -c "GRANT ALL PRIVILEGES ON DATABASE $database TO $ROLE;"
+
+	# make sure extensions are set up
+	for extension in $EXTENSIONS; do
+		$PSQL -d "$database" -c "CREATE EXTENSION IF NOT EXISTS $extension WITH SCHEMA pg_catalog;"
+		$PSQL -d "$database" -c "ALTER EXTENSION $extension SET SCHEMA pg_catalog;"
+	done
 done
 
 # Credits: https://twitter.com/samokhvalov/status/732359133010092032
