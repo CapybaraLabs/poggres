@@ -7,14 +7,15 @@
 
 set -e
 
+# For this to work properly, make sure the ENTRYPOINT is written in a way so this script is PID 1. See https://hynek.me/articles/docker-signals/
 _term() {
-	echo "Caught SIGTERM signal!"
+	echo "Caught termination signal!"
 	# sending SIGINT to postgres tells it to do a fast shutdown, which is what we want here due to the default 10 seconds
-	# which docker waits until send a SIGKILL which we want to avoid.
+	# which docker waits until sending a SIGKILL which we want to avoid.
 	# Relevant docs: https://www.postgresql.org/docs/10/static/server-shutdown.html
 	kill -INT "$child" 2>/dev/null
 }
-trap _term SIGTERM
+trap _term SIGTERM SIGINT
 
 # save env vars to a place where they can later be accessed by cron jobs (for backups etc)
 declare -p | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > /container.env
