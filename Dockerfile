@@ -1,4 +1,4 @@
-FROM postgres:13
+FROM postgres:14
 MAINTAINER napster@npstr.space
 
 ENV POSTGRES_USER postgres
