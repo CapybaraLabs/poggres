@@ -51,7 +51,7 @@ simple
 ```yaml
 services:
   dev-postgres:
-    image: napstr/poggres:14
+    image: napstr/poggres:15
     restart: always
     ports:
       - 127.0.0.1:5442:5432
@@ -66,7 +66,7 @@ more stuff
 ```yaml
 services:
   db:
-    image: napstr/poggres:14
+    image: napstr/poggres:15
     restart: always
     ports:
       - 127.0.0.1:5432:5432
