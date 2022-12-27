@@ -25,4 +25,4 @@ COPY run.sh /usr/local/bin/
 
 ENTRYPOINT ["/bin/bash", "run.sh"]
 
-HEALTHCHECK --interval=1s --retries=1 CMD LAST_DB=$(echo $DB | awk '{print $NF}'); /usr/bin/psql -U $POSTGRES_USER -tAc "SELECT 1 FROM pg_database WHERE datname='$LAST_DB';" | grep -q 1 || exit 1
+HEALTHCHECK --interval=30s --retries=1 CMD LAST_DB=$(echo $DB | awk '{print $NF}'); /usr/bin/psql -U $POSTGRES_USER -tAc "SELECT 1 FROM pg_database WHERE datname='$LAST_DB';" | grep -q 1 || exit 1
