@@ -1,4 +1,4 @@
-FROM postgres:15
+FROM postgres:16
 MAINTAINER napster@npstr.space
 
 ENV POSTGRES_USER postgres
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
 	b2 \
 	&& rm -rf ~/.cache/pip/*
 
