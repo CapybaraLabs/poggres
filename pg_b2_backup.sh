@@ -51,18 +51,18 @@ su - postgres -c "pg_dump ${DB}" | gzip | gpg --batch --passphrase "${PASS}" --o
 SHA1=$(sha1sum "${DUMPDIR}/${FILENAME}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
 
 #log in to backblaze
-b2 authorize-account "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
+b2 account authorize "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
 
 # upload it
-b2 upload-file --sha1 "${SHA1}" \
+b2 file upload --sha1 "${SHA1}" \
 	${INFO} \
-	--noProgress \
+	--quiet \
 	"${BUCKET}" \
 	"${DUMPDIR}/${FILENAME}" \
 	"${FILENAME}"
 
 # log out
-b2 clear-account
+b2 account clear
 
 # clean up
 if [ -f "${DUMPDIR}/${FILENAME}" ]; then
