@@ -1,0 +1,38 @@
+name: Weekly Build & Publish
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday at 6:00
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up env
+
+        run: |
+          IMAGE_BASE=${{ env.DOCKER_USERNAME }}/poggres
+          IMAGE_TAG=17
+          echo "DOCKER_TAG=$IMAGE_BASE:$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker Build
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: docker build -t "${{ env.DOCKER_TAG }}" .
+
+      - name: Docker Push
+        run: |
+          docker push "${{ env.DOCKER_TAG }}"
