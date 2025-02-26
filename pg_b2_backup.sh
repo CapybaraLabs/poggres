@@ -34,7 +34,7 @@ echo "Backing up db ${DB} of app ${APP} to bucket ${BUCKET}."
 DUMPDIR="/tmp"
 
 #will look like: app_db_2017-12-31.dump
-FILENAME=${APP}_${DB}_$(date +%Y-%m-%d).dump.gz.gpg
+FILENAME=$(date +%Y-%m-%d)_${APP}_${DB}.dump.gz.gpg
 INFO="--info app=${APP} --info db=${DB}"
 
 mkdir -p ${DUMPDIR}
