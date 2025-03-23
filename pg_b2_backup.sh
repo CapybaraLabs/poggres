@@ -1,6 +1,8 @@
 #!/bin/bash
-# this requires the backblaze CLI tool to be installed (pip install b2)
-
+#
+# Prerequisites:
+#   sudo apt install backblaze-b2
+#
 # pass six args:
 #  - database name (needs to exist in postgres)
 #  - app name (meta information)
@@ -51,10 +53,10 @@ su - postgres -c "pg_dump ${DB}" | gzip | gpg --batch --passphrase "${PASS}" --o
 SHA1=$(sha1sum "${DUMPDIR}/${FILENAME}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
 
 #log in to backblaze
-b2 account authorize "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
+backblaze-b2 authorize-account "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
 
 # upload it
-b2 file upload --sha1 "${SHA1}" \
+backblaze-b2 upload-file --sha1 "${SHA1}" \
 	${INFO} \
 	--quiet \
 	"${BUCKET}" \
@@ -62,7 +64,7 @@ b2 file upload --sha1 "${SHA1}" \
 	"${FILENAME}"
 
 # log out
-b2 account clear
+backblaze-b2 clear-account
 
 # clean up
 if [ -f "${DUMPDIR}/${FILENAME}" ]; then

@@ -1,17 +1,13 @@
-FROM postgres:17
+FROM postgres:17-bookworm
 LABEL org.opencontainers.image.authors="napster@npstr.space"
 
 ENV POSTGRES_USER=postgres
 
 RUN apt-get update && apt-get install -y \
-    python3-pip \
     cron \
+    backblaze-b2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
-
-RUN pip3 install --no-cache-dir --break-system-packages \
-	b2 \
-	&& rm -rf ~/.cache/pip/*
 
 COPY pg_b2_backup.sh /usr/local/bin/
 RUN touch /var/log/pg_backup.log
