@@ -36,11 +36,16 @@ EXTENSIONS                  any additional extensions delimited by spaces
 BACKUP_DB                   database to backup
 BACKUP_APPNAME              name of the application to backup (meta information)
 BACKUP_PASS                 password to encrypt the backup
+BACKUP_BUCKET               b2 bucket for backups
+BACKUP_ACCOUNT_ID           b2 account id
+BACKUP_APP_KEY              b2 app key
+```
+
+optionally, if you want to backup to different buckets:
+```
 BACKUP_BUCKET_DAILY         b2 bucket for daily backups
 BACKUP_BUCKET_WEEKLY        b2 bucket for weekly backups
 BACKUP_BUCKET_MONTHLY       b2 bucket for monthly backups
-BACKUP_ACCOUNT_ID           b2 account id
-BACKUP_APP_KEY              b2 app key
 ```
 
 ## how to use
@@ -81,9 +86,25 @@ services:
       - BACKUP_DB=foo
       - BACKUP_APPNAME=next-big-thing
       - BACKUP_PASS=top_secret
+      - BACKUP_BUCKET=next-big-thing-backups
       - BACKUP_BUCKET_DAILY=next-big-thing-backups-daily
       - BACKUP_BUCKET_WEEKLY=next-big-thing-backups-weekly
       - BACKUP_BUCKET_MONTHLY=next-big-thing-backups-monthly
       - BACKUP_ACCOUNT_ID=xyy
       - BACKUP_APP_KEY=yzz
 ```
+
+### backups
+
+#### schedule
+
+backups are created daily, weekly and monthly. see [crontab](./crontab) for exact timings.
+
+#### naming / buckets
+
+backups are uploaded to b2. you can pick a single bucket or use different buckets for daily, weekly and monthly backups.
+the filenames are prefixed with `daily`, `weekly` and `monthly` respectively so you can create lifecycle rules in b2 to delete old backups.
+
+#### more
+
+see [pg_b2_backup.sh](./pg_b2_backup.sh) for more details, such as how to decrypt and unpack them.

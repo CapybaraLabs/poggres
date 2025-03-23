@@ -3,15 +3,16 @@
 # Prerequisites:
 #   sudo apt install backblaze-b2 pv lbzip2
 #
-# pass six args:
+# pass seven args:
 #  - database name (needs to exist in postgres)
 #  - app name (meta information)
 #  - symmetric encryption password
 #  - bucket name (target of the upload)
 #  - backblaze account id
 #  - backblaze app key
+#  - qualifier (optional, defaults to daily)
 #
-# example: ./pg_b2_backup.sh foo next-big-thing top_secret backups-daily xyy yzz
+# example: ./pg_b2_backup.sh foo next-big-thing top_secret backups xyy yzz daily
 #
 # the resulting file can be decrypted again with something like
 # gpg --batch --passphrase top_secret --output foo_next-big-thing_2020-04-20.dump.bz2 --decrypt foo_next-big-thing_2020-04-20.dump.bz2.gpg
@@ -32,7 +33,9 @@ PASS=$3
 BUCKET=$4
 B2_ACCOUNT_ID=$5
 B2_APP_KEY=$6
-echo "Backing up db ${DB} of app ${APP} to bucket ${BUCKET}."
+# the qualifier is used as a prefix for the file name, so lifecycle rules can be created in b2
+QUALIFIER=${7:-daily}
+echo "Backing up db ${DB} of app ${APP} to bucket ${BUCKET} with qualifier ${QUALIFIER}."
 
 # Showing progress may spam log files, so we only do it when running in an interactive shell (e.g. for debugging the script).
 SHOW_PROGRESS=false
@@ -45,8 +48,8 @@ fi
 
 DUMPDIR="/tmp"
 
-#will look like: app_db_2017-12-31.dump
-FILENAME=$(date +%Y-%m-%d)_${APP}_${DB}.dump.bz2.gpg
+#will look like: daily_2017-12-31_app_db.dump
+FILENAME=${QUALIFIER}_$(date +%Y-%m-%d)_${APP}_${DB}.dump.bz2.gpg
 DUMPFILE=${DUMPDIR}/${FILENAME}
 
 mkdir -p ${DUMPDIR}
