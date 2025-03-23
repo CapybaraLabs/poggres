@@ -1,7 +1,7 @@
 FROM postgres:17
-MAINTAINER napster@npstr.space
+LABEL org.opencontainers.image.authors="napster@npstr.space"
 
-ENV POSTGRES_USER postgres
+ENV POSTGRES_USER=postgres
 
 RUN apt-get update && apt-get install -y \
     python3-pip \
