@@ -2,12 +2,12 @@ SHELL=/bin/bash
 BASH_ENV=/container.env
 
 # daily
-30  7   *   *   *   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_DAILY:-$BACKUP_BUCKET}   $BACKUP_ACCOUNT_ID $BACKUP_APP_KEY daily   &>> /var/log/pg_backup.log
+30  7   *   *   *   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_DAILY:-$BACKUP_BUCKET}   ${BACKUP_APP_KEY_ID:-$BACKUP_ACCOUNT_ID} $BACKUP_APP_KEY daily   &>> /var/log/pg_backup.log
 # weekly
-0   5   *   *   1   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_WEEKLY:-$BACKUP_BUCKET}  $BACKUP_ACCOUNT_ID $BACKUP_APP_KEY weekly  &>> /var/log/pg_backup.log
+0   5   *   *   1   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_WEEKLY:-$BACKUP_BUCKET}  ${BACKUP_APP_KEY_ID:-$BACKUP_ACCOUNT_ID} $BACKUP_APP_KEY weekly  &>> /var/log/pg_backup.log
 # monthly
-0   3   1   *   *   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_MONTHLY:-$BACKUP_BUCKET} $BACKUP_ACCOUNT_ID $BACKUP_APP_KEY monthly &>> /var/log/pg_backup.log
+0   3   1   *   *   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_MONTHLY:-$BACKUP_BUCKET} ${BACKUP_APP_KEY_ID:-$BACKUP_ACCOUNT_ID} $BACKUP_APP_KEY monthly &>> /var/log/pg_backup.log
 
 # these are for debugging
 #*   *   *   *   *   /bin/echo "Hello world, $BACKUP_APPNAME" &>> /var/log/cron.log
-#*   *   *   *   *   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_DAILY:-$BACKUP_BUCKET}   $BACKUP_ACCOUNT_ID $BACKUP_APP_KEY &>> /var/log/pg_backup.log
+#*   *   *   *   *   /usr/local/bin/pg_b2_backup.sh $BACKUP_DB $BACKUP_APPNAME $BACKUP_PASS ${BACKUP_BUCKET_DAILY:-$BACKUP_BUCKET}   ${BACKUP_APP_KEY_ID:-$BACKUP_ACCOUNT_ID} $BACKUP_APP_KEY &>> /var/log/pg_backup.log

@@ -31,7 +31,7 @@ DB=$1
 APP=$2
 PASS=$3
 BUCKET=$4
-B2_ACCOUNT_ID=$5
+B2_APP_KEY_ID=$5
 B2_APP_KEY=$6
 # the qualifier is used as a prefix for the file name, so lifecycle rules can be created in b2
 QUALIFIER=${7:-daily}
@@ -82,7 +82,7 @@ SHA1=$(sha1sum "${DUMPFILE}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
 echo "sha1sum is ${SHA1}"
 
 #log in to backblaze
-backblaze-b2 authorize-account "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
+backblaze-b2 authorize-account "${B2_APP_KEY_ID}" "${B2_APP_KEY}"
 echo "Logged into b2"
 
 # upload it

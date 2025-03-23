@@ -37,7 +37,7 @@ BACKUP_DB                   database to backup
 BACKUP_APPNAME              name of the application to backup (meta information)
 BACKUP_PASS                 password to encrypt the backup
 BACKUP_BUCKET               b2 bucket for backups
-BACKUP_ACCOUNT_ID           b2 account id
+BACKUP_APP_KEY_ID           b2 app key id (account id also works)
 BACKUP_APP_KEY              b2 app key
 ```
 
@@ -90,7 +90,7 @@ services:
       - BACKUP_BUCKET_DAILY=next-big-thing-backups-daily
       - BACKUP_BUCKET_WEEKLY=next-big-thing-backups-weekly
       - BACKUP_BUCKET_MONTHLY=next-big-thing-backups-monthly
-      - BACKUP_ACCOUNT_ID=xyy
+      - BACKUP_APP_KEY_ID=xyy
       - BACKUP_APP_KEY=yzz
 ```
 
