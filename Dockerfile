@@ -6,6 +6,8 @@ ENV POSTGRES_USER=postgres
 RUN apt-get update && apt-get install -y \
     cron \
     backblaze-b2 \
+    pv \
+    lbzip2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

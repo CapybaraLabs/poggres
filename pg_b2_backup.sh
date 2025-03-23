@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Prerequisites:
-#   sudo apt install backblaze-b2
+#   sudo apt install backblaze-b2 pv lbzip2
 #
 # pass six args:
 #  - database name (needs to exist in postgres)
@@ -14,7 +14,7 @@
 # example: ./pg_b2_backup.sh foo next-big-thing top_secret backups-daily xyy yzz
 #
 # the resulting file can be decrypted again with something like
-# gpg --batch --passphrase top_secret --output foo_next-big-thing_2020-04-20.dump.gz --decrypt foo_next-big-thing_2020-04-20.dump.gz.gpg
+# gpg --batch --passphrase top_secret --output foo_next-big-thing_2020-04-20.dump.bz2 --decrypt foo_next-big-thing_2020-04-20.dump.bz2.gpg
 
 set -e
 date
@@ -46,7 +46,7 @@ fi
 DUMPDIR="/tmp"
 
 #will look like: app_db_2017-12-31.dump
-FILENAME=$(date +%Y-%m-%d)_${APP}_${DB}.dump.gz.gpg
+FILENAME=$(date +%Y-%m-%d)_${APP}_${DB}.dump.bz2.gpg
 DUMPFILE=${DUMPDIR}/${FILENAME}
 
 mkdir -p ${DUMPDIR}
@@ -60,9 +60,19 @@ fi
 # shellcheck disable=SC2064 # the value is not changing
 trap "rm -f ${DUMPFILE} && echo 'Dump file at ${DUMPFILE} cleaned up'" EXIT
 
-# dump & encrypt it
-su - postgres -c "pg_dump ${DB}" | gzip | gpg --batch --passphrase "${PASS}" --output "${DUMPFILE}" --symmetric
-echo "Dumped and encrypted."
+# Dump & Encrypt it
+# See https://community.centminmod.com/threads/compression-comparison-benchmarks-zstd-vs-brotli-vs-pigz-vs-bzip2-vs-xz-etc.12764/
+# for comparison of compression algorithms. We pick lbzip2 for a great balance of speed and compression ratio.
+echo "Dumping & encrypting at ${DUMPFILE}"
+pv_zip() {
+	if [ "${SHOW_PROGRESS}" = true ]; then
+		pv | lbzip2;
+	else
+		lbzip2;
+	fi
+}
+su - postgres -c "pg_dump ${DB}" | pv_zip | gpg --batch --passphrase "${PASS}" --output "${DUMPFILE}" --symmetric
+echo "Dumped and encrypted at ${DUMPFILE}"
 
 # calculate sha1 sum
 SHA1=$(sha1sum "${DUMPFILE}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
