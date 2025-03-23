@@ -25,6 +25,7 @@ if [ "$EUID" -ne 0 ]; then
 	exit 1
 fi
 
+# Read arguments
 DB=$1
 APP=$2
 PASS=$3
@@ -32,6 +33,15 @@ BUCKET=$4
 B2_ACCOUNT_ID=$5
 B2_APP_KEY=$6
 echo "Backing up db ${DB} of app ${APP} to bucket ${BUCKET}."
+
+# Showing progress may spam log files, so we only do it when running in an interactive shell (e.g. for debugging the script).
+SHOW_PROGRESS=false
+if [ -t 1 ]; then
+  echo "Running in a TTY."
+  SHOW_PROGRESS=true
+else
+  echo "Running outside a TTY."
+fi
 
 DUMPDIR="/tmp"
 
@@ -48,25 +58,36 @@ fi
 
 # dump & encrypt it
 su - postgres -c "pg_dump ${DB}" | gzip | gpg --batch --passphrase "${PASS}" --output "${DUMPDIR}/${FILENAME}" --symmetric
+echo "Dumped and encrypted."
 
 # calculate sha1 sum
 SHA1=$(sha1sum "${DUMPDIR}/${FILENAME}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
+echo "sha1sum is ${SHA1}"
 
 #log in to backblaze
 backblaze-b2 authorize-account "${B2_ACCOUNT_ID}" "${B2_APP_KEY}"
+echo "Logged into b2"
 
 # upload it
+PROGRESS=""
+if [ "${SHOW_PROGRESS}" = false ]; then
+  PROGRESS="--noProgress"
+fi
 backblaze-b2 upload-file --sha1 "${SHA1}" \
 	${INFO} \
-	--quiet \
+	${PROGRESS} \
 	"${BUCKET}" \
 	"${DUMPDIR}/${FILENAME}" \
 	"${FILENAME}"
+echo "Uploaded to b2"
 
 # log out
 backblaze-b2 clear-account
+echo "Logged out of b2"
 
 # clean up
 if [ -f "${DUMPDIR}/${FILENAME}" ]; then
 	rm -f "${DUMPDIR}/${FILENAME}"
 fi
+
+echo "Done"
