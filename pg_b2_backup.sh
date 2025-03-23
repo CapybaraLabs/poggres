@@ -47,21 +47,25 @@ DUMPDIR="/tmp"
 
 #will look like: app_db_2017-12-31.dump
 FILENAME=$(date +%Y-%m-%d)_${APP}_${DB}.dump.gz.gpg
-INFO="--info app=${APP} --info db=${DB}"
+DUMPFILE=${DUMPDIR}/${FILENAME}
 
 mkdir -p ${DUMPDIR}
 
 # cleanup any old backups
-if [ -f "${DUMPDIR}/${FILENAME}" ]; then
-	rm -f "${DUMPDIR}/${FILENAME}"
+if [ -f "${DUMPFILE}" ]; then
+	rm -f "${DUMPFILE}}"
 fi
 
+# Ensure dump file is cleaned up on exit
+# shellcheck disable=SC2064 # the value is not changing
+trap "rm -f ${DUMPFILE} && echo 'Dump file at ${DUMPFILE} cleaned up'" EXIT
+
 # dump & encrypt it
-su - postgres -c "pg_dump ${DB}" | gzip | gpg --batch --passphrase "${PASS}" --output "${DUMPDIR}/${FILENAME}" --symmetric
+su - postgres -c "pg_dump ${DB}" | gzip | gpg --batch --passphrase "${PASS}" --output "${DUMPFILE}" --symmetric
 echo "Dumped and encrypted."
 
 # calculate sha1 sum
-SHA1=$(sha1sum "${DUMPDIR}/${FILENAME}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
+SHA1=$(sha1sum "${DUMPFILE}" | sed -En "s/^([0-9a-f]{40}).*/\1/p")
 echo "sha1sum is ${SHA1}"
 
 #log in to backblaze
@@ -74,20 +78,15 @@ if [ "${SHOW_PROGRESS}" = false ]; then
   PROGRESS="--noProgress"
 fi
 backblaze-b2 upload-file --sha1 "${SHA1}" \
-	${INFO} \
+	--info app="${APP}" --info db="${DB}" \
 	${PROGRESS} \
 	"${BUCKET}" \
-	"${DUMPDIR}/${FILENAME}" \
+	"${DUMPFILE}" \
 	"${FILENAME}"
 echo "Uploaded to b2"
 
 # log out
 backblaze-b2 clear-account
 echo "Logged out of b2"
-
-# clean up
-if [ -f "${DUMPDIR}/${FILENAME}" ]; then
-	rm -f "${DUMPDIR}/${FILENAME}"
-fi
 
 echo "Done"
