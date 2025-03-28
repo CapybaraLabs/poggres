@@ -10,10 +10,11 @@ set -e
 # For this to work properly, make sure the ENTRYPOINT is written in a way so this script is PID 1. See https://hynek.me/articles/docker-signals/
 _term() {
 	echo "Caught termination signal!"
-	# sending SIGINT to postgres tells it to do a fast shutdown, which is what we want here due to the default 10 seconds
+	# We want a fast shutdown here due to the default 10 seconds
 	# which docker waits until sending a SIGKILL which we want to avoid.
 	# Relevant docs: https://www.postgresql.org/docs/10/static/server-shutdown.html
-	kill -INT "$child" 2>/dev/null
+	# and https://www.postgresql.org/docs/current/app-pg-ctl.html
+	su -c "pg_ctl stop -m fast" postgres
 }
 trap _term SIGTERM SIGINT
 
