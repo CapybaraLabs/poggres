@@ -27,7 +27,7 @@ docker stop "$CONTAINER_NAME"
 # Make backup of the directory
 DATA_PATH="$APP_PATH/postgres-data/"
 echo "Creating a backup"
-tar --use-compress-program="pigz --best --recursive" -cvf postgres-data.tar.gz "$DATA_PATH"
+tar --use-compress-program="lbzip2" -cvf postgres-data.tar.bz2 "$DATA_PATH"
 
 # Create new directory
 NEW_DATA_PATH="$APP_PATH/postgres-data/$NEW/data"
