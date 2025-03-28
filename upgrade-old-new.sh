@@ -2,8 +2,7 @@
 
 # See https://github.com/tianon/docker-postgres-upgrade
 #
-# 0a. before running this script, make sure to update the database image to the postgres $NEW and the $NEW data path
-# in the docker-compose file
+# 0a. before running this script, make sure to update the database image to the postgres $NEW and the $NEW data path in the docker compose file
 # 0b. Also make sure there are no other scripts in the postgres-data directory such as analyze_new_cluster.sh or delete_old_cluster.sh as they might have wrong permissions
 
 set -e

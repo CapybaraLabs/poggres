@@ -50,7 +50,7 @@ BACKUP_BUCKET_MONTHLY       b2 bucket for monthly backups
 
 ## how to use
 
-### docker-compose
+### docker compose
 
 simple
 ```yaml
