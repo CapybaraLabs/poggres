@@ -56,7 +56,7 @@ simple
 ```yaml
 services:
   dev-postgres:
-    image: napstr/poggres:17
+    image: napstr/poggres:18
     restart: always
     ports:
       - 127.0.0.1:5442:5432
@@ -71,12 +71,12 @@ more stuff
 ```yaml
 services:
   db:
-    image: napstr/poggres:17
+    image: napstr/poggres:18
     restart: always
     ports:
       - 127.0.0.1:5432:5432
     volumes:
-      - ./postgres-data/17/data:/var/lib/postgresql/data
+      - ./postgres-data/18/data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=top_secret
       - DB=foo

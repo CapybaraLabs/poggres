@@ -1,4 +1,4 @@
-FROM postgres:17-bookworm
+FROM postgres:18-trixie
 LABEL org.opencontainers.image.authors="napster@npstr.space"
 
 ENV POSTGRES_USER=postgres
