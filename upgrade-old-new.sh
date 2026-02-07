@@ -12,32 +12,36 @@ CONTAINER_NAME=$2
 OLD=$3
 NEW=$4
 
+ANSI_BLUE=$(printf '\e[1;94m')
+ANSI_RESET=$(printf '\e[0m')
+ECHO_PREFIX="${ANSI_BLUE}[Poggres Upgrade Script]${ANSI_RESET}"
+
 cd "$APP_PATH"
 
 # Pull necessary containers
-echo "Pulling containers for later steps"
+echo "$ECHO_PREFIX Pulling containers for later steps"
 docker pull tianon/postgres-upgrade:"$OLD"-to-"$NEW"
 docker pull napstr/poggres:"$NEW"
 
 CHECKSUMS=$(docker exec "$CONTAINER_NAME" psql -U postgres -t -A -c 'SHOW data_checksums')
 
 # Stop db container
-echo "Stopping DB container $CONTAINER_NAME"
+echo "$ECHO_PREFIX Stopping DB container $CONTAINER_NAME"
 docker stop "$CONTAINER_NAME"
 
 # Make backup of the directory
 DATA_PATH="$APP_PATH/postgres-data/"
-echo "Creating a backup"
+echo "$ECHO_PREFIX Creating a backup"
 tar --use-compress-program="lbzip2" -cvf postgres-data.tar.bz2 "$DATA_PATH"
 
 # Create new directory
 NEW_DATA_PATH="$APP_PATH/postgres-data/$NEW/data"
-echo "Creating $NEW_DATA_PATH"
+echo "$ECHO_PREFIX Creating $NEW_DATA_PATH"
 mkdir -p "$NEW_DATA_PATH"
 
 # Enable checksums if necessary (new v18 default)
 if [ "$OLD" -le 17 ] && [ "$NEW" -ge 18 ] && [ "$CHECKSUMS" = "off" ]; then
-	echo "Enabling checksums in PostgreSQL"
+	echo "$ECHO_PREFIX Enabling checksums in PostgreSQL"
 	docker run --rm \
     --mount "type=bind,src=$APP_PATH/postgres-data/$OLD/data,dst=/var/lib/postgresql/data" \
     --entrypoint '/bin/sh' \
@@ -46,7 +50,7 @@ if [ "$OLD" -le 17 ] && [ "$NEW" -ge 18 ] && [ "$CHECKSUMS" = "off" ]; then
 fi
 
 # Run upgrade container
-echo "Running upgrade container"
+echo "$ECHO_PREFIX Running upgrade container"
 docker run --rm \
   --mount "type=bind,src=$APP_PATH/postgres-data,dst=/var/lib/postgresql" \
   --env "PGDATAOLD=/var/lib/postgresql/$OLD/data" \
@@ -56,16 +60,16 @@ docker run --rm \
 
 # Run latest database container
 UPDATE_SCRIPT="$APP_PATH/docker-update.sh"
-echo "Updating containers $UPDATE_SCRIPT"
+echo "$ECHO_PREFIX Updating containers $UPDATE_SCRIPT"
 sh "$UPDATE_SCRIPT"
 
 # Fix pg_hba
-echo "Fixing pg_hba"
+echo "$ECHO_PREFIX Fixing pg_hba"
 echo "host all all all scram-sha-256" >> "$APP_PATH"/postgres-data/"$NEW"/data/pg_hba.conf
 docker restart "$CONTAINER_NAME"
 
 # Generate optimizer statistics
-echo "Waiting a bit"
+echo "$ECHO_PREFIX Waiting a bit"
 sleep 10
-echo "Generating optimizer statistics"
+echo "$ECHO_PREFIX Generating optimizer statistics"
 docker exec -t "$CONTAINER_NAME" vacuumdb -U postgres --all --analyze-in-stages --missing-stats-only
