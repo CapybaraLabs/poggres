@@ -61,7 +61,7 @@ sh "$UPDATE_SCRIPT"
 
 # Fix pg_hba
 echo "Fixing pg_hba"
-echo "host all all all md5" >> "$APP_PATH"/postgres-data/"$NEW"/data/pg_hba.conf
+echo "host all all all scram-sha-256" >> "$APP_PATH"/postgres-data/"$NEW"/data/pg_hba.conf
 docker restart "$CONTAINER_NAME"
 
 # Generate optimizer statistics
