@@ -76,7 +76,7 @@ services:
     ports:
       - 127.0.0.1:5432:5432
     volumes:
-      - ./postgres-data/18/data:/var/lib/postgresql/data
+      - ./postgres-data/:/var/lib/postgresql/
     environment:
       - POSTGRES_PASSWORD=top_secret
       - DB=foo
@@ -108,3 +108,16 @@ the filenames are prefixed with `daily`, `weekly` and `monthly` respectively so 
 #### more
 
 see [pg_b2_backup.sh](./pg_b2_backup.sh) for more details, such as how to decrypt and unpack them.
+
+### PostgreSQL 18
+
+a bunch of stuff was changed for 18, [including the directory layout](https://github.com/docker-library/postgres/pull/1259)
+in the official postgres image that poggres depends on. **make sure to update your `volumes` path in your compose file!**.
+
+another [issue](https://github.com/tianon/docker-postgres-upgrade/issues/121) is that 18 enables checksums by default,
+which breaks the upgrade script with this message:
+```
+old cluster does not use data checksums but the new one does
+```
+there are two solutions to this: disabling checksums, or upgrading your 17 to use checksums.
+the poggres upgrade script will automatically enable checksums during the upgrade, which may take more time than usual.

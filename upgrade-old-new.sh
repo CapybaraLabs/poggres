@@ -19,6 +19,8 @@ echo "Pulling containers for later steps"
 docker pull tianon/postgres-upgrade:"$OLD"-to-"$NEW"
 docker pull napstr/poggres:"$NEW"
 
+CHECKSUMS=$(docker exec "$CONTAINER_NAME" psql -U postgres -t -A -c 'SHOW data_checksums')
+
 # Stop db container
 echo "Stopping DB container $CONTAINER_NAME"
 docker stop "$CONTAINER_NAME"
@@ -33,10 +35,22 @@ NEW_DATA_PATH="$APP_PATH/postgres-data/$NEW/data"
 echo "Creating $NEW_DATA_PATH"
 mkdir -p "$NEW_DATA_PATH"
 
+# Enable checksums if necessary (new v18 default)
+if [ "$OLD" -le 17 ] && [ "$NEW" -ge 18 ] && [ "$CHECKSUMS" = "off" ]; then
+	echo "Enabling checksums in PostgreSQL"
+	docker run --rm \
+    --mount "type=bind,src=$APP_PATH/postgres-data/$OLD/data,dst=/var/lib/postgresql/data" \
+    --entrypoint '/bin/sh' \
+    napstr/poggres:"$OLD" \
+		-c 'pg_checksums --pgdata /var/lib/postgresql/data --enable --progress'
+fi
+
 # Run upgrade container
 echo "Running upgrade container"
 docker run --rm \
-  -v "$APP_PATH"/postgres-data:/var/lib/postgresql \
+  --mount "type=bind,src=$APP_PATH/postgres-data,dst=/var/lib/postgresql" \
+  --env "PGDATAOLD=/var/lib/postgresql/$OLD/data" \
+  --env "PGDATANEW=/var/lib/postgresql/$NEW/data" \
   tianon/postgres-upgrade:"$OLD"-to-"$NEW" \
   --link
 
@@ -54,4 +68,4 @@ docker restart "$CONTAINER_NAME"
 echo "Waiting a bit"
 sleep 10
 echo "Generating optimizer statistics"
-docker exec -t "$CONTAINER_NAME" /usr/lib/postgresql/"$NEW"/bin/vacuumdb -U postgres --all --analyze-in-stages
+docker exec -t "$CONTAINER_NAME" vacuumdb -U postgres --all --analyze-in-stages --missing-stats-only

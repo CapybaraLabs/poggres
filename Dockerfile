@@ -2,6 +2,8 @@ FROM postgres:18-trixie
 LABEL org.opencontainers.image.authors="napster@npstr.space"
 
 ENV POSTGRES_USER=postgres
+# keep old subdirectory "data", instead of new "docker"
+ENV PGDATA=/var/lib/postgresql/18/data
 
 RUN apt-get update && apt-get install -y \
     cron \
